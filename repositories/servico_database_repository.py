@@ -155,7 +155,7 @@ class ServicoDatabaseRepository:
                 Delete from servico
                 where id_servico = %s
             """
-            cursor.execute(sql)
+            cursor.execute(sql, (id_servico,))
             conexão.commit()
 
             return cursor.rowcount > 0
