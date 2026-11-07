@@ -20,7 +20,7 @@ create table if not exists ordem_servico (
     id_os int auto_increment primary key,
     id_cliente int not null,
     id_servico int not null,
-    data_abertura date not null,
+    data_abertura date not null default (current_date),
     valor_cobrado decimal(10, 2) not null,
     status varchar(20) not null default 'Aberta',
 

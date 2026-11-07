@@ -14,20 +14,16 @@ class OrdemServicoDatabaseRepository:
             sql = """
                 Insert into ordem_servico (
                     id_cliente, 
-                    id_servico, 
-                    data_abertura, 
-                    valor_cobrado, 
-                    status
+                    id_servico,  
+                    valor_cobrado
                 )
-                values (%s, %s, %s, %s, %s)
+                values (%s, %s, %s)
             """
 
             valores = (
                 ordem_servico.id_cliente,
                 ordem_servico.id_servico,
-                ordem_servico.data_abertura,
-                ordem_servico.valor_cobrado,
-                ordem_servico.status
+                ordem_servico.valor_cobrado
             )
 
             cursor.execute(sql, valores)
@@ -135,8 +131,7 @@ class OrdemServicoDatabaseRepository:
             sql = """
                 Update ordem_servico
                 set id_cliente = %s,
-                    id_servico = %s, 
-                    data_abertura = %s, 
+                    id_servico = %s,
                     valor_cobrado = %s, 
                     status = %s
                 where id_os = %s
@@ -144,7 +139,6 @@ class OrdemServicoDatabaseRepository:
             valores = (
                 ordem_servico.id_cliente,
                 ordem_servico.id_servico,
-                ordem_servico.data_abertura,
                 ordem_servico.valor_cobrado,
                 ordem_servico.status,
                 ordem_servico.id_os

@@ -8,8 +8,11 @@ from menu import (
 def main():
     while True:
         exibir_menu()
-
-        indice = int(input(">>> "))
+        try:
+            indice = int(input(">>> "))
+        except ValueError:
+            print("Opção Inválida. Digite um numero.")
+            continue
 
         match indice:
             case 1:
