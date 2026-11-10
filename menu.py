@@ -6,6 +6,9 @@ from repositories.cliente_database_repository import ClienteDatabaseRepository
 from repositories.ordem_servico_database_repository import OrdemServicoDatabaseRepository
 from repositories.servico_database_repository import ServicoDatabaseRepository
 
+# importando as validações 
+from validators import validar_cpf, validar_preco, validar_email, validar_nome, validar_telefone
+
 def ler_opcao():
     try:
         return int(input(">>> "))
@@ -24,17 +27,46 @@ def exibir_menu():
 def cadastrar_cliente():
     print("\n---------- Cadastro de Cliente ----------")
 
-    nome = input("Nome: ").strip()
-
-    if not nome:
-        print("----------------------------------")
-        print("O nome do cliente é obrigatório.")
-        print("----------------------------------")
-        return
+    # validar o nome(somente letras)
+    while True:
+        nome = input("Nome: ").strip()
+        if not nome:
+            print("----------------------------------")
+            print("O nome do cliente é obrigatório.")
+            print("----------------------------------")
+            continue
+        if validar_nome(nome):
+            break
+        print("------------------------------------------------")
+        print("Nome inválido! O nome não pode conter números.")
+        print("------------------------------------------------")
     
-    cpf = input("CPF: ")
-    telefone = input("Telefone: ")
-    email = input("Email: ")
+    # validar o cpf (somente numeros e 11 digitos)
+    while True:
+        cpf = input("CPF (apenas números): ").strip()
+        if validar_cpf(cpf):
+            break
+        print("------------------------------------------------")
+        print("CPF inválido! Digite exatamente 11 números.")
+        print("------------------------------------------------")
+
+    # validar o numero  (sem letras)
+    while True:
+        telefone = input("Telefone: ").strip()
+        if validar_telefone(telefone):
+            break
+        print("------------------------------------------------")
+        print("Telefone inválido! Digite apenas números e símbolos permitidos (+, -, ()).")
+        print("------------------------------------------------")
+    
+    # validar o email (tem que ter o @ e o dominio seguido do ponto)
+    while True:
+        email = input("Email: ").strip()
+        if validar_email(email):
+            break
+        print("------------------------------------------------")
+        print("Email inválido! Formato esperado: nome@dominio.com")
+        print("------------------------------------------------")
 
     cliente = Cliente(
         None,
@@ -127,6 +159,12 @@ def atualizar_cliente():
                         print("O nome não pode ficar vazio.")
                         print("--------------------------------------")
                         continue
+                        
+                    if not validar_nome(novo_valor):
+                        print("--------------------------------------")
+                        print("Nome inválido! O nome não pode conter números.")
+                        print("--------------------------------------")
+                        continue
 
                     cliente.nome = novo_valor
 
@@ -142,11 +180,17 @@ def atualizar_cliente():
                         print("--------------------------------------")
 
                 case 2:
-                    novo_valor = input("Informe o novo CPF: ").strip()
+                    novo_valor = input("Informe o novo CPF (apenas números): ").strip()
 
                     if not novo_valor:
                         print("--------------------------------------")
                         print("O CPF não pode ficar vazio.")
+                        print("--------------------------------------")
+                        continue
+                    
+                    if not validar_cpf(novo_valor):
+                        print("--------------------------------------")
+                        print("CPF inválido! Digite exatamente 11 números.")
                         print("--------------------------------------")
                         continue
 
@@ -171,6 +215,12 @@ def atualizar_cliente():
                         print("O telefone não pode ficar vazio.")
                         print("--------------------------------------")
                         continue
+                        
+                    if not validar_telefone(novo_valor):
+                        print("--------------------------------------")
+                        print("Telefone inválido! Não utilize letras.")
+                        print("--------------------------------------")
+                        continue
 
                     cliente.telefone = novo_valor
 
@@ -191,6 +241,12 @@ def atualizar_cliente():
                     if not novo_valor:
                         print("--------------------------------------")
                         print("O email não pode ficar vazio.")
+                        print("--------------------------------------")
+                        continue
+                    
+                    if not validar_email(novo_valor):
+                        print("--------------------------------------")
+                        print("Email inválido! Formato esperado: nome@dominio.com")
                         print("--------------------------------------")
                         continue
 
@@ -263,18 +319,15 @@ def cadastrar_servico():
 
     descricao = input("Descrição do serviço: ").strip()
 
-    try:
-        preco_padrao = float(input("Preço padrão do serviço: R$"))
-        if preco_padrao < 0:
-            print("----------------------------------")
-            print("O preço não pode ser negativo.")
-            print("----------------------------------")
-            return
-    except ValueError:
-        print("-----------------------------------------")
-        print("Preço Inválido! Digite um valor numerico.")
-        print("-----------------------------------------")
-        return
+    # validar preço (número decimal válido e não pode ser negativo)
+    while True:
+        preco_str = input("Preço padrão do serviço: R$").strip()
+        if validar_preco(preco_str):
+            preco_padrao = float(preco_str)
+            break
+        print("----------------------------------------------------")
+        print("Preço Inválido! Digite um valor decimal não negativo.")
+        print("----------------------------------------------------")
 
     servico = Servico(
         None,
@@ -400,21 +453,15 @@ def atualizar_servico():
                         print("--------------------------------------")
 
                 case 3:
-                    try:
-                        novo_valor = float(input("Informe o novo preço: R$"))
-                    except ValueError:
+                    novo_valor = input("Informe o novo preço: R$").strip()
+                    
+                    if not validar_preco(novo_valor):
                         print("--------------------------------------")
-                        print("Preço inválido! Digite um número.")
-                        print("--------------------------------------")
-                        continue
-
-                    if novo_valor < 0:
-                        print("--------------------------------------")
-                        print("O preço não pode ser negativo.")
+                        print("Preço inválido! Digite um valor numérico não negativo.")
                         print("--------------------------------------")
                         continue
 
-                    servico.preco_padrao = novo_valor
+                    servico.preco_padrao = float(novo_valor)
 
                     resultado = repositorio.update(servico)
 
@@ -476,17 +523,20 @@ def cadastrar_ordem_servico():
     try:
         id_cliente = int(input("ID do cliente: "))
         id_servico = int(input("ID do serviço: "))
-        valor_cobrado = float(input("Valor cobrado: R$"))
+        
+        while True:
+            preco_str = input("Valor cobrado: R$").strip()
+            if validar_preco(preco_str):
+                valor_cobrado = float(preco_str)
+                break
+            print("----------------------------------------------------")
+            print("Valor Inválido! Digite um valor decimal não negativo.")
+            print("----------------------------------------------------")
 
     except:
         print("-------------------------------------------------")
-        print("Entrada Inválido! Verifique os valores informados")
+        print("Entrada Inválida! Verifique os valores informados")
         print("-------------------------------------------------")
-        return
-    if valor_cobrado < 0:
-        print("----------------------------------------")
-        print("O valor não pode ser negativo.")
-        print("----------------------------------------")
         return
 
     if id_cliente <= 0:
@@ -583,6 +633,13 @@ def atualizar_ordem_servico():
 
     if ordem is not None:
 
+        # REQUISITO DE TESTES: Impedir alteração de OS Concluída
+        if ordem.status == "Concluída":
+            print("--------------------------------------------------------")
+            print("Ação bloqueada: Não é possível alterar uma OS Concluída.")
+            print("--------------------------------------------------------")
+            return
+
         while True:
             print("\n------ Atualizar Ordem de Serviço ------")
             print(f"Ordem de Serviço: {ordem.id_os}")
@@ -669,21 +726,15 @@ def atualizar_ordem_servico():
                         print("--------------------------------------")
 
                 case 3:
-                    try:
-                        novo_valor = float(input("Informe o novo valor cobrado: R$"))
-                    except ValueError:
+                    novo_valor = input("Informe o novo valor cobrado: R$").strip()
+                    
+                    if not validar_preco(novo_valor):
                         print("--------------------------------------")
-                        print("Valor inválido! Digite um número.")
-                        print("--------------------------------------")
-                        continue
-
-                    if novo_valor < 0:
-                        print("--------------------------------------")
-                        print("O valor não pode ser negativo.")
+                        print("Valor inválido! Digite um número decimal não negativo.")
                         print("--------------------------------------")
                         continue
 
-                    ordem.valor_cobrado = novo_valor
+                    ordem.valor_cobrado = float(novo_valor)
 
                     resultado = repositorio.update(ordem)
 
