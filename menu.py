@@ -5,9 +5,18 @@ from models.servico import Servico
 from repositories.cliente_database_repository import ClienteDatabaseRepository
 from repositories.ordem_servico_database_repository import OrdemServicoDatabaseRepository
 from repositories.servico_database_repository import ServicoDatabaseRepository
+from repositories.relatorio_database_repository import RelatorioDatabaseRepository
 
-# importando as validações 
-from validators import validar_cpf, validar_preco, validar_email, validar_nome, validar_telefone
+
+from validators import (
+    validar_cpf,
+    validar_preco,
+    validar_email,
+    validar_nome,
+    validar_telefone,
+    validar_status,
+    pode_alterar_ordem_servico
+)
 
 def ler_opcao():
     try:
@@ -21,13 +30,13 @@ def exibir_menu():
     print("[1] - Gerenciar Clientes")
     print("[2] - Gerenciar Serviços")
     print("[3] - Gerenciar Ordens de Serviços")
+    print("[4] - Gerenciar Relatórios")
     print("[0] - Sair")
     print("----------------------------------")
 
 def cadastrar_cliente():
     print("\n---------- Cadastro de Cliente ----------")
 
-    # validar o nome(somente letras)
     while True:
         nome = input("Nome: ").strip()
         if not nome:
@@ -41,7 +50,6 @@ def cadastrar_cliente():
         print("Nome inválido! O nome não pode conter números.")
         print("------------------------------------------------")
     
-    # validar o cpf (somente numeros e 11 digitos)
     while True:
         cpf = input("CPF (apenas números): ").strip()
         if validar_cpf(cpf):
@@ -50,7 +58,6 @@ def cadastrar_cliente():
         print("CPF inválido! Digite exatamente 11 números.")
         print("------------------------------------------------")
 
-    # validar o numero  (sem letras)
     while True:
         telefone = input("Telefone: ").strip()
         if validar_telefone(telefone):
@@ -59,7 +66,7 @@ def cadastrar_cliente():
         print("Telefone inválido! Digite apenas números e símbolos permitidos (+, -, ()).")
         print("------------------------------------------------")
     
-    # validar o email (tem que ter o @ e o dominio seguido do ponto)
+    
     while True:
         email = input("Email: ").strip()
         if validar_email(email):
@@ -80,7 +87,7 @@ def cadastrar_cliente():
     resultado = repositorio.save(cliente)
 
     if resultado:
-        print("\nCliente cadastrado com suceeso!")
+        print("\nCliente cadastrado com sucesso!")
         print(f"ID gerado: {cliente.id_cliente}")
     else:
         print("\nErro ao cadastrar cliente.")
@@ -106,7 +113,20 @@ def listar_cliente():
 def buscar_cliente():
     repositorio = ClienteDatabaseRepository()
 
-    id_cliente = int(input("Informe o ID do cliente que deseja buscar: "))
+    try:
+        id_cliente = int(input("Informe o ID do cliente que deseja buscar: "))
+
+        if id_cliente <= 0:
+            print("----------------------------------")
+            print("O ID deve ser um número positivo.")
+            print("----------------------------------")
+            return
+
+    except ValueError:
+        print("--------------------------------------")
+        print("ID Inválido! Digite um número inteiro.")
+        print("--------------------------------------")
+        return
 
     cliente = repositorio.find_by_id(id_cliente)
 
@@ -132,6 +152,12 @@ def atualizar_cliente():
         print("--------------------------------------")
         print("ID inválido! Digite um número inteiro.")
         print("--------------------------------------")
+        return
+
+    if id_cliente <= 0:
+        print("----------------------------------------")
+        print("ID inválido! Informe um número positivo.")
+        print("----------------------------------------")
         return
 
     cliente = repositorio.find_by_id(id_cliente)
@@ -286,7 +312,20 @@ def atualizar_cliente():
 def excluir_cliente():
     repositorio = ClienteDatabaseRepository()
 
-    id_cliente = int(input("Informe o ID do cliente que deseja excluir: "))
+    try:
+        id_cliente = int(input("Informe o ID do cliente que deseja excluir: "))
+
+        if id_cliente <= 0:
+            print("----------------------------------")
+            print("O ID deve ser um número positivo.")
+            print("----------------------------------")
+            return
+
+    except ValueError:
+        print("--------------------------------------")
+        print("ID Inválido! Digite um número inteiro.")
+        print("--------------------------------------")
+        return
 
     cliente = repositorio.find_by_id(id_cliente)
 
@@ -309,17 +348,23 @@ def excluir_cliente():
 def cadastrar_servico():
     print("\n---------- Cadastro de Serviço ----------")
 
-    nome_servico = input("Nome do serviço: ").strip()
+    while True:
+        nome_servico = input("Nome do serviço: ").strip()
 
-    if not nome_servico:
-        print("----------------------------------")
-        print("O nome do serviço é obrigatório.")
-        print("----------------------------------")
-        return
+        if not nome_servico:
+            print("----------------------------------")
+            print("O nome do serviço é obrigatório.")
+            print("----------------------------------")
+            continue
+
+        if validar_nome(nome_servico):
+            break
+        print("--------------------------------------------------")
+        print("Nome inválido! Verifique o nome do serviço.")
+        print("--------------------------------------------------")
 
     descricao = input("Descrição do serviço: ").strip()
 
-    # validar preço (número decimal válido e não pode ser negativo)
     while True:
         preco_str = input("Preço padrão do serviço: R$").strip()
         if validar_preco(preco_str):
@@ -364,7 +409,21 @@ def listar_servico():
 def buscar_servico():
     repositorio = ServicoDatabaseRepository()
 
-    id_servico = int(input("Informe o ID do serviço que deseja buscar: "))
+    try:
+        id_servico = int(input("Informe o ID do serviço que deseja buscar: "))
+    
+        if id_servico <= 0:
+            print("----------------------------------")
+            print("O ID deve ser um número positivo.")
+            print("----------------------------------")
+            return
+    
+    except ValueError:
+            print("--------------------------------------")
+            print("ID Inválido! Digite um número inteiro.")
+            print("--------------------------------------")
+            return
+
 
     servico = repositorio.find_by_id(id_servico)
 
@@ -392,6 +451,12 @@ def atualizar_servico():
         print("--------------------------------------")
         return
 
+    if id_servico <= 0:
+        print("----------------------------------------")
+        print("ID inválido! Informe um número positivo.")
+        print("----------------------------------------")
+        return
+
     servico = repositorio.find_by_id(id_servico)
 
     if servico is not None:
@@ -414,6 +479,12 @@ def atualizar_servico():
                     if not novo_valor:
                         print("--------------------------------------")
                         print("O nome não pode ficar vazio.")
+                        print("--------------------------------------")
+                        continue
+
+                    if not validar_nome(novo_valor):
+                        print("--------------------------------------")
+                        print("Nome inválido! Verifique o nome do serviço.")
                         print("--------------------------------------")
                         continue
 
@@ -497,7 +568,20 @@ def atualizar_servico():
 def excluir_servico():
     repositorio = ServicoDatabaseRepository()
 
-    id_servico = int(input("Informe o ID do serviço que deseja excluir: "))
+    try:
+        id_servico = int(input("Informe o ID do serviço que deseja excluir: "))
+    
+        if id_servico <= 0:
+                print("----------------------------------")
+                print("O ID deve ser um número positivo.")
+                print("----------------------------------")
+                return
+    
+    except ValueError:
+        print("--------------------------------------")
+        print("ID Inválido! Digite um número inteiro.")
+        print("--------------------------------------")
+        return
 
     servico = repositorio.find_by_id(id_servico)
 
@@ -533,7 +617,7 @@ def cadastrar_ordem_servico():
             print("Valor Inválido! Digite um valor decimal não negativo.")
             print("----------------------------------------------------")
 
-    except:
+    except ValueError:
         print("-------------------------------------------------")
         print("Entrada Inválida! Verifique os valores informados")
         print("-------------------------------------------------")
@@ -549,6 +633,17 @@ def cadastrar_ordem_servico():
         print("----------------------------------------")
         print("O ID do serviço deve ser maior que zero.")
         print("----------------------------------------")
+        return
+    
+    cliente_repositorio = ClienteDatabaseRepository()
+    servico_repositorio = ServicoDatabaseRepository()
+
+    if cliente_repositorio.find_by_id(id_cliente) is None:
+        print("Cliente não encontrado!")
+        return
+
+    if servico_repositorio.find_by_id(id_servico) is None:
+        print("Serviço não encontrado!")
         return
 
     ordem_servico = OrdemServico(
@@ -598,7 +693,20 @@ def listar_ordem_servico():
 def buscar_ordem_servico():
     repositorio = OrdemServicoDatabaseRepository()
 
-    id_os = int(input("Informe o ID da Ordem de Serviço que deseja buscar: "))
+    try:
+        id_os = int(input("Informe o ID da Ordem de Serviço que deseja buscar: "))
+
+        if id_os <= 0:
+            print("----------------------------------------")
+            print("ID inválido! Informe um número positivo.")
+            print("----------------------------------------")
+            return
+
+    except ValueError:
+        print("--------------------------------------")
+        print("ID inválido! Digite um número inteiro.")
+        print("--------------------------------------")
+        return
 
     ordem = repositorio.find_by_id(id_os)
 
@@ -629,12 +737,17 @@ def atualizar_ordem_servico():
         print("--------------------------------------")
         return
 
+    if id_os <= 0:
+        print("----------------------------------------")
+        print("ID inválido! Informe um número positivo.")
+        print("----------------------------------------")
+        return
+
     ordem = repositorio.find_by_id(id_os)
 
     if ordem is not None:
 
-        # REQUISITO DE TESTES: Impedir alteração de OS Concluída
-        if ordem.status == "Concluída":
+        if not pode_alterar_ordem_servico(ordem):
             print("--------------------------------------------------------")
             print("Ação bloqueada: Não é possível alterar uma OS Concluída.")
             print("--------------------------------------------------------")
@@ -772,6 +885,10 @@ def atualizar_ordem_servico():
                             print("Opção de status inválida!")
                             print("--------------------------------------")
                             continue
+                    
+                    if not validar_status(novo_status):
+                        print("Status inválido!")
+                        continue
 
                     ordem.status = novo_status
 
@@ -809,7 +926,20 @@ def atualizar_ordem_servico():
 def excluir_ordem_servico():
     repositorio = OrdemServicoDatabaseRepository()
 
-    id_os = int(input("Informe o ID da Ordem de Serviço que deseja excluir: "))
+    try:
+        id_os = int(input("Informe o ID da Ordem de Serviço que deseja excluir: "))
+
+        if id_os <= 0:
+            print("----------------------------------------")
+            print("ID inválido! Informe um número positivo.")
+            print("----------------------------------------")
+            return
+
+    except ValueError:
+        print("--------------------------------------")
+        print("ID inválido! Digite um número inteiro.")
+        print("--------------------------------------")
+        return
 
     ordem = repositorio.find_by_id(id_os)
 
@@ -925,3 +1055,70 @@ def menu_ordem_servico():
                 print("Opção Inválida. Digite um número.")
             case _:
                 print("Opção Inválida! Tente novamente.")
+
+def menu_relatorios():
+    repositorio = RelatorioDatabaseRepository()
+
+    while True:
+        print("\n-------------- Relatórios --------------")
+        print("[1] - Quantidade de OS por serviço")
+        print("[2] - Faturamento por serviço")
+        print("[3] - Quantidade de OS e média por cliente")
+        print("[0] - Voltar")
+        print("------------------------------------")
+
+        opcao = ler_opcao()
+
+        match opcao:
+            case 1:
+                resultados = repositorio.quantidade_os_por_servico()
+
+                print("\n--- Quantidade de OS por Serviço ---")
+
+                if not resultados:
+                    print("Nenhum registro encontrado.")
+                else:
+                    for item in resultados:
+                        print(
+                            f"{item['nome_servico']}: "
+                            f"{item['quantidade_os']} OS"
+                        )
+
+            case 2:
+                resultados = repositorio.faturamento_por_servico()
+
+                print("\n--- Faturamento por Serviço ---")
+
+                if not resultados:
+                    print("Nenhum registro encontrado.")
+                else:
+                    for item in resultados:
+                        print(f"\nServiço: {item['nome_servico']}")
+                        print(f"Quantidade de OS: {item['quantidade_os']}")
+                        print(f"Faturamento: R$ {item['faturamento_total']:.2f}")
+                        print(f"Valor médio: R$ {item['valor_medio']:.2f}")
+
+            case 3:
+                resultados = repositorio.quantidade_os_e_media_por_cliente()
+
+                print("\n--- Quantidade de OS e Média por Cliente ---")
+
+                if not resultados:
+                    print("Nenhum registro encontrado.")
+                else:
+                    for item in resultados:
+                        print(f"\nCliente: {item['nome']}")
+                        print(f"Quantidade de OS: {item['quantidade_os']}")
+
+                        if item['media_valor_gasto'] is not None:
+                            print(f"Média de valor gasto: R$ {item['media_valor_gasto']:.2f}")
+                        else:
+                            print("Média de valor gasto: Sem ordens de serviço.")
+
+            case 0:
+                break
+            case -1:
+                print("Opção Inválida. Digite um número.")
+
+            case _:
+                print("Opção inválida! Tente novamente.")

@@ -130,7 +130,7 @@ class ClienteDatabaseRepository:
                 cliente.nome,
                 cliente.cpf,
                 cliente.telefone,
-                cliente. email,
+                cliente.email,
                 cliente.id_cliente
             )
             cursor.execute(sql, valores)

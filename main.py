@@ -2,7 +2,8 @@ from menu import (
     exibir_menu,
     menu_cliente,
     menu_servico,
-    menu_ordem_servico
+    menu_ordem_servico,
+    menu_relatorios
 )
 
 def main():
@@ -11,7 +12,7 @@ def main():
         try:
             indice = int(input(">>> "))
         except ValueError:
-            print("Opção Inválida. Digite um numero.")
+            print("Opção Inválida! Digite um numero.")
             continue
 
         match indice:
@@ -23,6 +24,9 @@ def main():
 
             case 3:
                 menu_ordem_servico()
+
+            case 4:
+                menu_relatorios()
 
             case 0:
                 print("Encerrando AutoCare...")
